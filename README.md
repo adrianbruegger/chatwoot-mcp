@@ -122,6 +122,41 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 npm run dev
 ```
 
+## Vercel Deployment
+
+This project can be deployed to Vercel as a remote MCP server over Streamable HTTP.
+
+1. Connect the GitHub repo to Vercel
+2. Set environment variables in the Vercel project:
+   - `CHATWOOT_BASE_URL`
+   - `CHATWOOT_API_TOKEN` (or `CHATWOOT_EMAIL` + `CHATWOOT_PASSWORD`)
+3. Deploy — the MCP endpoint will be available at `/api/mcp`
+
+Connect from MCP clients that support Streamable HTTP:
+
+```json
+{
+  "mcpServers": {
+    "chatwoot": {
+      "url": "https://your-deployment.vercel.app/api/mcp"
+    }
+  }
+}
+```
+
+For stdio-only clients, use [mcp-remote](https://www.npmjs.com/package/mcp-remote):
+
+```json
+{
+  "mcpServers": {
+    "chatwoot": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://your-deployment.vercel.app/api/mcp"]
+    }
+  }
+}
+```
+
 ## Example Queries
 
 Once connected, you can ask Claude things like:
