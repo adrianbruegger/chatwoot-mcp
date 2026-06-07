@@ -6,18 +6,20 @@ import { z } from "zod";
 import { getClient } from "../services/chatwoot-client.js";
 import { handleApiError } from "../services/error-handler.js";
 import { ResponseFormat } from "../constants.js";
-import { AccountIdSchema, ResponseFormatSchema } from "../schemas/common.js";
+import { getAccountId } from "../config.js";
+import { ResponseFormatSchema } from "../schemas/common.js";
 
 /**
  * Schema for listing messages in a conversation
  */
-export const ListMessagesSchema = AccountIdSchema.extend({
-  conversation_id: z
-    .number()
-    .int()
-    .positive()
-    .describe("The ID of the conversation"),
-})
+export const ListMessagesSchema = z
+  .object({
+    conversation_id: z
+      .number()
+      .int()
+      .positive()
+      .describe("The ID of the conversation"),
+  })
   .merge(ResponseFormatSchema)
   .strict();
 
@@ -29,13 +31,14 @@ export type ListMessagesInput = z.infer<typeof ListMessagesSchema>;
 export async function listMessages(params: ListMessagesInput) {
   try {
     const client = getClient();
+    const accountId = getAccountId();
 
     const { data, error, response } = await client.GET(
       "/api/v1/accounts/{account_id}/conversations/{conversation_id}/messages",
       {
         params: {
           path: {
-            account_id: params.account_id,
+            account_id: accountId,
             conversation_id: params.conversation_id,
           },
         },
@@ -137,22 +140,24 @@ export async function listMessages(params: ListMessagesInput) {
 /**
  * Schema for creating a message
  */
-export const CreateMessageSchema = AccountIdSchema.extend({
-  conversation_id: z
-    .number()
-    .int()
-    .positive()
-    .describe("The ID of the conversation"),
-  content: z.string().min(1).describe("The message content"),
-  message_type: z
-    .enum(["outgoing", "incoming"])
-    .default("outgoing")
-    .describe("The type of message"),
-  private: z
-    .boolean()
-    .default(false)
-    .describe("Whether the message is private (internal note)"),
-}).strict();
+export const CreateMessageSchema = z
+  .object({
+    conversation_id: z
+      .number()
+      .int()
+      .positive()
+      .describe("The ID of the conversation"),
+    content: z.string().min(1).describe("The message content"),
+    message_type: z
+      .enum(["outgoing", "incoming"])
+      .default("outgoing")
+      .describe("The type of message"),
+    private: z
+      .boolean()
+      .default(false)
+      .describe("Whether the message is private (internal note)"),
+  })
+  .strict();
 
 export type CreateMessageInput = z.infer<typeof CreateMessageSchema>;
 
@@ -162,13 +167,14 @@ export type CreateMessageInput = z.infer<typeof CreateMessageSchema>;
 export async function createMessage(params: CreateMessageInput) {
   try {
     const client = getClient();
+    const accountId = getAccountId();
 
     const { data, error, response } = await client.POST(
       "/api/v1/accounts/{account_id}/conversations/{conversation_id}/messages",
       {
         params: {
           path: {
-            account_id: params.account_id,
+            account_id: accountId,
             conversation_id: params.conversation_id,
           },
         },

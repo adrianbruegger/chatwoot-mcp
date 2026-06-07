@@ -7,11 +7,12 @@ import { createChatwootClient } from "../src/services/chatwoot-client.js";
 describe("Chatwoot Client - API Token Authentication", () => {
   const baseUrl = process.env.CHATWOOT_BASE_URL!;
   const apiToken = process.env.CHATWOOT_API_TOKEN!;
+  const accountId = Number.parseInt(process.env.CHATWOOT_ACCOUNT_ID ?? "", 10);
 
   beforeAll(() => {
-    if (!baseUrl || !apiToken) {
+    if (!baseUrl || !apiToken || !Number.isInteger(accountId)) {
       throw new Error(
-        "CHATWOOT_BASE_URL and CHATWOOT_API_TOKEN must be set in .env"
+        "CHATWOOT_BASE_URL, CHATWOOT_ACCOUNT_ID, and CHATWOOT_API_TOKEN must be set in .env"
       );
     }
   });
@@ -33,12 +34,11 @@ describe("Chatwoot Client - API Token Authentication", () => {
       apiAccessToken: apiToken,
     });
 
-    // Use account 3 as seen in the curl example
     const { data, error, response } = await client.GET(
       "/api/v1/accounts/{account_id}/conversations",
       {
         params: {
-          path: { account_id: 3 },
+          path: { account_id: accountId },
           query: { status: "open" } as any,
         },
       }
@@ -72,7 +72,7 @@ describe("Chatwoot Client - API Token Authentication", () => {
       "/api/v1/accounts/{account_id}/conversations",
       {
         params: {
-          path: { account_id: 3 },
+          path: { account_id: accountId },
           query: { status: "open" } as any,
         },
       }

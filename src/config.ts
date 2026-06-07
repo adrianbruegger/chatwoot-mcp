@@ -1,8 +1,24 @@
 export interface ChatwootConfig {
   baseUrl: string;
+  accountId: number;
   apiAccessToken?: string;
   email?: string;
   password?: string;
+}
+
+function parseAccountId(value: string | undefined): number {
+  if (!value) {
+    throw new Error(
+      "CHATWOOT_ACCOUNT_ID is required. Set it in Vercel environment variables or .env."
+    );
+  }
+
+  const accountId = Number.parseInt(value, 10);
+  if (!Number.isInteger(accountId) || accountId <= 0) {
+    throw new Error("CHATWOOT_ACCOUNT_ID must be a positive integer.");
+  }
+
+  return accountId;
 }
 
 export function getChatwootConfig(): ChatwootConfig {
@@ -24,8 +40,13 @@ export function getChatwootConfig(): ChatwootConfig {
 
   return {
     baseUrl: process.env.CHATWOOT_BASE_URL,
+    accountId: parseAccountId(process.env.CHATWOOT_ACCOUNT_ID),
     apiAccessToken,
     email,
     password,
   };
+}
+
+export function getAccountId(): number {
+  return getChatwootConfig().accountId;
 }

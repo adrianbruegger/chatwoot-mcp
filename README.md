@@ -59,8 +59,11 @@ The simplest method using your Chatwoot API token (no expiration).
 **Configure `.env`:**
 ```bash
 CHATWOOT_BASE_URL="https://your-chatwoot-instance.com"
+CHATWOOT_ACCOUNT_ID="3"
 CHATWOOT_API_TOKEN="your_api_token_here"
 ```
+
+Find your account ID in the Chatwoot URL: `/app/accounts/{id}/`.
 
 ### Alternative: JWT Authentication
 
@@ -68,6 +71,7 @@ Use email/password if API tokens don't work on your instance (requires password 
 
 ```bash
 CHATWOOT_BASE_URL="https://your-chatwoot-instance.com"
+CHATWOOT_ACCOUNT_ID="3"
 CHATWOOT_EMAIL="your@email.com"
 CHATWOOT_PASSWORD="your_password"
 ```
@@ -93,6 +97,7 @@ server {
 ```bash
 claude mcp add chatwoot \
   -e CHATWOOT_BASE_URL="https://your-instance.com" \
+  -e CHATWOOT_ACCOUNT_ID="3" \
   -e CHATWOOT_API_TOKEN="your_token" \
   -- npx chatwoot-mcp-server
 ```
@@ -109,6 +114,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "args": ["chatwoot-mcp-server"],
       "env": {
         "CHATWOOT_BASE_URL": "https://your-chatwoot-instance.com",
+        "CHATWOOT_ACCOUNT_ID": "3",
         "CHATWOOT_API_TOKEN": "your_api_token"
       }
     }
@@ -129,6 +135,7 @@ This project can be deployed to Vercel as a remote MCP server over Streamable HT
 1. Connect the GitHub repo to Vercel
 2. Set environment variables in the Vercel project:
    - `CHATWOOT_BASE_URL`
+   - `CHATWOOT_ACCOUNT_ID`
    - `CHATWOOT_API_TOKEN` (or `CHATWOOT_EMAIL` + `CHATWOOT_PASSWORD`)
 3. Deploy — the MCP endpoint will be available at `/api/mcp`
 
@@ -161,7 +168,7 @@ For stdio-only clients, use [mcp-remote](https://www.npmjs.com/package/mcp-remot
 
 Once connected, you can ask Claude things like:
 
-- "Show me all open conversations in account 3"
+- "Show me all open conversations"
 - "What are the details of conversation #123?"
 - "List all messages in conversation #456"
 - "Send a reply to conversation #789 saying 'Thank you for contacting us!'"

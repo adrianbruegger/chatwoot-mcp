@@ -6,17 +6,13 @@ import { z } from "zod";
 import { getClient } from "../services/chatwoot-client.js";
 import { handleApiError } from "../services/error-handler.js";
 import { ResponseFormat } from "../constants.js";
-import {
-  AccountIdSchema,
-  PaginationSchema,
-  ResponseFormatSchema,
-} from "../schemas/common.js";
+import { getAccountId } from "../config.js";
+import { PaginationSchema, ResponseFormatSchema } from "../schemas/common.js";
 
 /**
  * Schema for listing conversations
  */
-export const ListConversationsSchema = AccountIdSchema.merge(PaginationSchema)
-  .merge(ResponseFormatSchema)
+export const ListConversationsSchema = PaginationSchema.merge(ResponseFormatSchema)
   .extend({
     status: z
       .enum(["open", "resolved", "pending", "snoozed", "all"])
@@ -43,13 +39,14 @@ export type ListConversationsInput = z.infer<typeof ListConversationsSchema>;
 export async function listConversations(params: ListConversationsInput) {
   try {
     const client = getClient();
+    const accountId = getAccountId();
 
     const { data, error, response } = await client.GET(
       "/api/v1/accounts/{account_id}/conversations",
       {
         params: {
           path: {
-            account_id: params.account_id,
+            account_id: accountId,
           },
           query: {
             page: params.page,
@@ -166,13 +163,14 @@ export async function listConversations(params: ListConversationsInput) {
 /**
  * Schema for getting a single conversation
  */
-export const GetConversationSchema = AccountIdSchema.extend({
-  conversation_id: z
-    .number()
-    .int()
-    .positive()
-    .describe("The ID of the conversation"),
-})
+export const GetConversationSchema = z
+  .object({
+    conversation_id: z
+      .number()
+      .int()
+      .positive()
+      .describe("The ID of the conversation"),
+  })
   .merge(ResponseFormatSchema)
   .strict();
 
@@ -184,13 +182,14 @@ export type GetConversationInput = z.infer<typeof GetConversationSchema>;
 export async function getConversation(params: GetConversationInput) {
   try {
     const client = getClient();
+    const accountId = getAccountId();
 
     const { data, error, response } = await client.GET(
       "/api/v1/accounts/{account_id}/conversations/{conversation_id}",
       {
         params: {
           path: {
-            account_id: params.account_id,
+            account_id: accountId,
             conversation_id: params.conversation_id,
           },
         },

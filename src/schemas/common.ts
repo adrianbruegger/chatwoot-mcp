@@ -26,14 +26,3 @@ export const ResponseFormatSchema = z.object({
     .default(ResponseFormat.MARKDOWN)
     .describe("Output format: 'markdown' for human-readable or 'json' for machine-readable"),
 });
-
-/**
- * Account ID schema
- */
-export const AccountIdSchema = z.object({
-  account_id: z
-    .number()
-    .int()
-    .positive()
-    .describe("The numeric ID of the account"),
-});
