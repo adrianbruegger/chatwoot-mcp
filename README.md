@@ -137,15 +137,42 @@ This project can be deployed to Vercel as a remote MCP server over Streamable HT
    - `CHATWOOT_BASE_URL`
    - `CHATWOOT_ACCOUNT_ID`
    - `CHATWOOT_API_TOKEN` (or `CHATWOOT_EMAIL` + `CHATWOOT_PASSWORD`)
-3. Deploy — the MCP endpoint will be available at `/api/mcp`
+   - `MCP_AUTH_TOKEN` (shared secret for `/mcp`; generate with `openssl rand -hex 32`)
+3. Deploy — the MCP endpoint will be available at `/mcp`
 
-Connect from MCP clients that support Streamable HTTP:
+### Securing the endpoint
+
+The HTTP endpoint requires a bearer token. Every request must include:
+
+```http
+Authorization: Bearer <MCP_AUTH_TOKEN>
+```
+
+Without a valid token, `/mcp` returns `401 Unauthorized`.
+
+**Poke:** add the connection at [poke.com/settings/connections](https://poke.com/settings/connections) with:
+
+- URL: `https://your-deployment.vercel.app/mcp`
+- API key: the same value as `MCP_AUTH_TOKEN`
+
+Or via CLI:
+
+```bash
+poke mcp add https://your-deployment.vercel.app/mcp \
+  --name "Chatwoot" \
+  --api-key "your-mcp-auth-token"
+```
+
+Connect from other MCP clients that support Streamable HTTP:
 
 ```json
 {
   "mcpServers": {
     "chatwoot": {
-      "url": "https://your-deployment.vercel.app/api/mcp"
+      "url": "https://your-deployment.vercel.app/mcp",
+      "headers": {
+        "Authorization": "Bearer your-mcp-auth-token"
+      }
     }
   }
 }
@@ -158,7 +185,13 @@ For stdio-only clients, use [mcp-remote](https://www.npmjs.com/package/mcp-remot
   "mcpServers": {
     "chatwoot": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://your-deployment.vercel.app/api/mcp"]
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://your-deployment.vercel.app/mcp",
+        "--header",
+        "Authorization: Bearer your-mcp-auth-token"
+      ]
     }
   }
 }

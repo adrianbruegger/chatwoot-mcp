@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createChatwootMcpServer } from "../dist/create-server.js";
 
@@ -21,7 +22,58 @@ function withCors(response: Response): Response {
   });
 }
 
+function unauthorizedResponse(message = "Unauthorized"): Response {
+  return withCors(
+    new Response(JSON.stringify({ error: message }), {
+      status: 401,
+      headers: {
+        "Content-Type": "application/json",
+        "WWW-Authenticate": 'Bearer realm="chatwoot-mcp"',
+      },
+    })
+  );
+}
+
+function isAuthorized(request: Request): boolean {
+  const expected = process.env.MCP_AUTH_TOKEN;
+  if (!expected) {
+    return false;
+  }
+
+  const auth = request.headers.get("authorization");
+  if (!auth?.startsWith("Bearer ")) {
+    return false;
+  }
+
+  const token = auth.slice(7);
+  const expectedBuffer = Buffer.from(expected);
+  const tokenBuffer = Buffer.from(token);
+
+  if (expectedBuffer.length !== tokenBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(expectedBuffer, tokenBuffer);
+}
+
+function assertAuthorized(request: Request): Response | null {
+  if (!process.env.MCP_AUTH_TOKEN) {
+    return unauthorizedResponse("MCP_AUTH_TOKEN is not configured");
+  }
+
+  if (!isAuthorized(request)) {
+    return unauthorizedResponse();
+  }
+
+  return null;
+}
+
 async function handleMcpRequest(request: Request): Promise<Response> {
+  const authError = assertAuthorized(request);
+  if (authError) {
+    return authError;
+  }
+
   try {
     const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
